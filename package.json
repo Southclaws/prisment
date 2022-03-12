@@ -1,0 +1,18 @@
+{
+    "scripts": {
+        "start": "tsc convert.ts"
+    },
+    "dependencies": {
+        "@prisma/engine-core": "^3.2.1",
+        "@prisma/generator-helper": "^3.2.1",
+        "@prisma/sdk": "^3.2.1",
+        "change-case": "^4.1.2",
+        "prisma": "^3.2.1"
+    },
+    "devDependencies": {
+        "@types/node": "^17.0.21",
+        "ts-node": "^10.7.0",
+        "tslib": "^2.3.1",
+        "typescript": "^3.9.5"
+    }
+}
