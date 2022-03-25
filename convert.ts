@@ -10,6 +10,7 @@ type Schema = {
 };
 
 const slice = (l: string[]) => [...l, "\n    "].join(",");
+const quotedSlice = (l: string[]) => l.map((v) => `"${v}"`).join(",");
 
 const when = (cond: boolean, item: any) => (cond ? [item] : []);
 
@@ -70,20 +71,21 @@ const getSuffixes = (f: DMMF.Field) =>
     ...defaultValue(f),
   ].join("");
 
-const enumToGo = (f: DMMF.Field): string => {
+const enumToGo = (f: DMMF.Field, d: DMMF.Document): string => {
   const suffixes = getSuffixes(f);
 
-  console.log(f);
-
-  const values = [`"TODO: Enums"`];
+  const enumData = d.datamodel.enums
+    .filter((e) => e.name == f.type)
+    .map((e) => e.values);
+  const enumValues = enumData[0].map((e) => e.name);
 
   return `
-        field.Enum(${values.join(", ")})${suffixes}`;
+        field.Enum("${f.name}").Values(${quotedSlice(enumValues)})${suffixes}`;
 };
 
-const fieldToGo = (f: DMMF.Field): string | undefined => {
+const fieldToGo = (f: DMMF.Field, d: DMMF.Document): string | undefined => {
   if (f.kind === "enum") {
-    return enumToGo(f);
+    return enumToGo(f, d);
   }
 
   const fieldType = getFieldType(f);
@@ -99,12 +101,12 @@ const fieldToGo = (f: DMMF.Field): string | undefined => {
 };
 
 const edgeToGo = (f: DMMF.Field): string => {
-  console.log(f.name, f.relationFromFields, f.relationName, f.relationToFields);
+  //console.log(f.name, f.relationFromFields, f.relationName, f.relationToFields);
   return `
     edge.To("${f.name}", ${f.type}.Type)`;
 };
 
-const modelToGo = (model: DMMF.Model): Schema => {
+const modelToGo = (model: DMMF.Model, document: DMMF.Document): Schema => {
   const { name, fields } = model;
 
   const path = `./ent/schema/${snakeCase(name)}.go`;
@@ -114,7 +116,7 @@ const modelToGo = (model: DMMF.Model): Schema => {
   const edgeList = edges.map(edgeToGo);
 
   const fieldList: string[] = fields
-    .map(fieldToGo)
+    .map((f) => fieldToGo(f, document))
     .filter((v) => v !== undefined) as string[];
 
   // TODO: generate a list of relationships
@@ -161,7 +163,7 @@ const save = async (s: Schema) => {
 (async () => {
   const dmmf = await getDMMF({ datamodelPath: "prisma/schema.prisma" });
 
-  const models = dmmf.datamodel.models.map(modelToGo);
+  const models = dmmf.datamodel.models.map((model) => modelToGo(model, dmmf));
 
   // TODO: Invoke `go generate`
 
