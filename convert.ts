@@ -124,13 +124,17 @@ const modelToGo = (model: DMMF.Model, document: DMMF.Document): Schema => {
   const fieldsString = `[]ent.Field{${slice(fieldList)}}`;
   const edgesString = `[]ent.Edge{${slice(edgeList)}}`;
 
+  let edgeImport = "";
+  if (edgeList.length) {
+    edgeImport = `\n\t"entgo.io/ent/schema/edge"`;
+  }
+
   const source = `
 package schema
 
 import (
     "entgo.io/ent"
-    "entgo.io/ent/schema/field"
-    "entgo.io/ent/schema/edge"
+    "entgo.io/ent/schema/field" ${edgeImport}
 )
 
 // ${name} holds the schema definition for the ${name} entity.
