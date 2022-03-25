@@ -248,7 +248,6 @@ func (${name}) Edges() []ent.Edge {
 };
 
 const save = async (s: Schema) => {
-  await mkdir("./ent/schema/", { recursive: true });
   await writeFile(s.path, s.source);
 };
 
@@ -262,6 +261,7 @@ const save = async (s: Schema) => {
 
   // TODO: Invoke `go generate`
 
+  await mkdir("./ent/schema/", { recursive: true });
   await Promise.all(models.map(save));
 
   console.log("Done!");
