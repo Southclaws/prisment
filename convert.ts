@@ -188,7 +188,6 @@ const fieldToGo = (
 };
 
 const edgeToGo = (f: DMMF.Field): string => {
-  //console.log(f.name, f.relationFromFields, f.relationName, f.relationToFields);
   return `
         edge.To("${f.name}", ${f.type}.Type)`;
 };
@@ -200,15 +199,15 @@ const modelToGo = (
   const { name, fields } = data.model;
   const path = `./ent/schema/${snakeCase(name)}.go`;
 
-  const edges = fields.filter((v) => v.relationToFields !== undefined);
-  const edgeList = edges.map(edgeToGo);
-
+  // build fields
   const fieldList: string[] = fields
     .map((f) => fieldToGo(f, data, structure))
     .filter((v) => v !== undefined) as string[];
 
-  // TODO: generate a list of relationships
+  // build relationships
+  const edgeList = data.relations.map(edgeToGo);
 
+  // build generated template
   const fieldsString = `[]ent.Field{${slice(fieldList)}}`;
   const edgesString = `[]ent.Edge{${slice(edgeList)}}`;
 
